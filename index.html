@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebGMC</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23272b23'/%3E%3Ccircle cx='8' cy='8' r='4' fill='%2314fe17'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="webgmc.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js" defer></script>
+  <script src="webgmc.js" defer></script>
+</head>
+<body>
+  <main class="webgmc-shell">
+    <div class="webgmc-crt-frame">
+      <div class="webgmc-crt-screen">
+        <section id="webgmc-app" class="webgmc" data-webgmc-view="splash" aria-live="polite">
+          <div class="webgmc__splash" data-webgmc-splash>
+            <p class="webgmc__splash-banner">✱✱✱ WEBGMC // GMC-800 LINK ✱✱✱</p>
+            <header class="webgmc-header">
+              <div>
+                <h1>WebGMC</h1>
+                <p>GMC-800 RADIATION MONITOR // WEBSERIAL LINK</p>
+              </div>
+            </header>
+            <div class="webgmc__splash-body">
+              <div class="webgmc__splash-copy">
+                <p class="webgmc__boot-line">DEVICE LINK REQUIRED</p>
+                <p class="webgmc__splash-instruction">CONNECT A GQ GMC-800 DOSIMETER TO THIS COMPUTER WITH USB.</p>
+                <p class="webgmc__splash-instruction webgmc__splash-instruction--dim">PRESS CONNECT TO OPEN THE SERIAL PORT, OR DEMO TO EXPLORE WITHOUT A DEVICE.</p>
+                <div class="webgmc__splash-actions">
+                  <button type="button" class="webgmc__button webgmc__button--primary webgmc__connect-button" data-webgmc-connect>CONNECT</button>
+                  <button type="button" class="webgmc__button webgmc__button--secondary webgmc__demo-button" data-webgmc-demo>DEMO</button>
+                </div>
+              </div>
+              <div class="webgmc__splash-device">
+                <img class="webgmc__device-image" src="assets/gmc-800.webp" width="300" height="300" alt="GQ GMC-800 Geiger counter">
+                <div class="webgmc__splash-checklist">
+                  <div class="webgmc__splash-row">
+                    <span class="webgmc__splash-row-label">DEVICE</span>
+                    <span class="webgmc__splash-row-value">GQ GMC-800</span>
+                  </div>
+                  <div class="webgmc__splash-row">
+                    <span class="webgmc__splash-row-label">USB</span>
+                    <span class="webgmc__splash-row-value">REQUIRED</span>
+                  </div>
+                  <div class="webgmc__splash-row">
+                    <span class="webgmc__splash-row-label">BROWSER</span>
+                    <span class="webgmc__splash-row-value" data-webgmc-browser-support>CHECKING</span>
+                  </div>
+                  <div class="webgmc__splash-row">
+                    <span class="webgmc__splash-row-label">BAUD</span>
+                    <span class="webgmc__splash-row-value">115200</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="webgmc__dashboard" data-webgmc-dashboard>
+            <nav class="webgmc__nav" role="tablist" aria-label="WebGMC views">
+              <ul class="webgmc__nav-list">
+                <li class="webgmc__nav-item webgmc__nav-item--active">
+                  <a href="#graph" class="webgmc__tab" id="webgmc-tab-graph" role="tab" aria-controls="webgmc-panel-graph" aria-selected="true" data-webgmc-tab="graph">GRAPH</a>
+                </li>
+                <li class="webgmc__nav-item">
+                  <a href="#device" class="webgmc__tab" id="webgmc-tab-device" role="tab" aria-controls="webgmc-panel-device" aria-selected="false" data-webgmc-tab="device">DEVICE</a>
+                </li>
+                <li class="webgmc__nav-item">
+                  <a href="#control" class="webgmc__tab" id="webgmc-tab-control" role="tab" aria-controls="webgmc-panel-control" aria-selected="false" data-webgmc-tab="control">CONTROL</a>
+                </li>
+              </ul>
+            </nav>
+
+            <div class="webgmc__body">
+              <div class="webgmc__content">
+                <div class="webgmc__tab-panel" id="webgmc-panel-graph" role="tabpanel" aria-labelledby="webgmc-tab-graph" data-webgmc-tab-panel="graph">
+                  <div class="webgmc__boot-panel" data-webgmc-boot-panel>
+                    <p class="webgmc__boot-panel-title">WEBGMC LINK PROTOCOL</p>
+                    <p class="webgmc__boot-panel-subtitle">ESTABLISHING LINK...</p>
+                    <ul class="webgmc__boot-checklist">
+                      <li data-webgmc-boot-step="port">[ .. ] SERIAL PORT</li>
+                      <li data-webgmc-boot-step="handshake">[ .. ] GMC-800 HANDSHAKE</li>
+                      <li data-webgmc-boot-step="cache">[ .. ] HISTORY CACHE</li>
+                    </ul>
+                  </div>
+                  <div class="webgmc__chart-panel">
+                    <div class="webgmc__chart-body">
+                      <div class="webgmc__chart" data-webgmc-chart data-webgmc-chart-empty="true"></div>
+                      <div class="webgmc__live-meter" data-webgmc-live-meter>
+                        <div class="webgmc__live-meter-track" aria-hidden="true">
+                          <div class="webgmc__live-meter-bar" data-webgmc-live-meter-bar></div>
+                        </div>
+                        <span class="webgmc__live-meter-value" data-webgmc-live-meter-value>--</span>
+                        <div class="webgmc__live-meter-label">
+                          <span class="webgmc__live-meter-unit">CPM</span>
+                          <span class="webgmc__live-meter-expand">(COUNTS PER MINUTE)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="webgmc__tab-panel" id="webgmc-panel-device" role="tabpanel" aria-labelledby="webgmc-tab-device" data-webgmc-tab-panel="device" hidden>
+                  <div class="webgmc__device-list">
+                    <div class="webgmc__device-row">
+                      <span class="webgmc__device-title">DEVICE</span>
+                      <span class="webgmc__metric-value" data-webgmc-device>--</span>
+                    </div>
+                    <div class="webgmc__device-row">
+                      <span class="webgmc__device-title">SERIAL</span>
+                      <span class="webgmc__metric-value" data-webgmc-serial>--</span>
+                    </div>
+                    <div class="webgmc__device-row">
+                      <span class="webgmc__device-title">DEVICE ID</span>
+                      <span class="webgmc__metric-value" data-webgmc-dsid>--</span>
+                    </div>
+                    <div class="webgmc__device-row">
+                      <span class="webgmc__device-title">DATETIME</span>
+                      <div class="webgmc__datetime-row">
+                        <span class="webgmc__metric-value" data-webgmc-datetime>--</span>
+                        <span class="webgmc__datetime-delta" data-webgmc-datetime-delta hidden></span>
+                        <button type="button" class="webgmc__button webgmc__button--secondary webgmc__datetime-sync" data-webgmc-sync-datetime hidden disabled>SYNC</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="webgmc__tab-panel" id="webgmc-panel-control" role="tabpanel" aria-labelledby="webgmc-tab-control" data-webgmc-tab-panel="control" hidden>
+                  <div class="webgmc__control-grid">
+                    <p class="webgmc__control-section">SIMULATE PRESSING BUTTONS ON THE DOSIMETER</p>
+                    <button type="button" class="webgmc__control-button" data-webgmc-operation="key0" disabled>
+                      <span class="webgmc__control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" d="M6 8H16a3 3 0 0 1 0 6H8m0 0 3-3m-3 3 3 3"/>
+                        </svg>
+                      </span>
+                      <span class="webgmc__sr-only">KEY0</span>
+                    </button>
+                    <button type="button" class="webgmc__control-button" data-webgmc-operation="key1" disabled>
+                      <span class="webgmc__control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                          <path fill="currentColor" d="M12 5l8 12H4z"/>
+                        </svg>
+                      </span>
+                      <span class="webgmc__sr-only">UP</span>
+                    </button>
+                    <button type="button" class="webgmc__control-button" data-webgmc-operation="key2" disabled>
+                      <span class="webgmc__control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                          <path fill="currentColor" d="M12 19L4 7h16z"/>
+                        </svg>
+                      </span>
+                      <span class="webgmc__sr-only">DOWN</span>
+                    </button>
+                    <button type="button" class="webgmc__control-button" data-webgmc-operation="key3" disabled>
+                      <span class="webgmc__control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                          <path fill="none" stroke="currentColor" stroke-width="2" d="M12 3v9"/>
+                          <circle cx="12" cy="14" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                      </span>
+                      <span class="webgmc__sr-only">PWR</span>
+                    </button>
+                    <p class="webgmc__control-section">POWER</p>
+                    <button type="button" class="webgmc__control-button webgmc__control-button--danger" data-webgmc-operation="poweroff" disabled>
+                      <span class="webgmc__control-label">POWER OFF</span>
+                    </button>
+                    <button type="button" class="webgmc__control-button webgmc__control-button--danger" data-webgmc-operation="reboot" disabled>
+                      <span class="webgmc__control-label">REBOOT</span>
+                    </button>
+                    <p class="webgmc__control-section">WEBGMC APP</p>
+                    <button type="button" class="webgmc__control-button webgmc__control-button--utility" data-webgmc-clear-cache>
+                      <span class="webgmc__control-label">CLEAR APP CACHE</span>
+                    </button>
+                    <a href="https://anatoly-scherbakov.github.io/webgmc/" class="webgmc__control-button webgmc__control-button--utility" target="_blank" rel="noopener noreferrer">
+                      <span class="webgmc__control-label">GITHUB</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <footer class="webgmc__status-bar" aria-live="polite">
+              <div class="webgmc__status-bar-inner">
+                <div class="webgmc__status-group">
+                  <span class="webgmc__status-dot" data-webgmc-status-dot hidden aria-hidden="true"></span>
+                  <span class="webgmc__status webgmc__status--idle" data-webgmc-status></span>
+                </div>
+                <button type="button" class="webgmc__disconnect" data-webgmc-disconnect disabled>DISCONNECT</button>
+              </div>
+            </footer>
+          </div>
+        </section>
+      </div>
+      <div class="webgmc-crt-overlay" aria-hidden="true"></div>
+    </div>
+  </main>
+</body>
+</html>

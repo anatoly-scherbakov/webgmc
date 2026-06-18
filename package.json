@@ -1,0 +1,12 @@
+{
+  "name": "webgmc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static WebSerial app for GQ GMC dosimeters.",
+  "scripts": {
+    "test": "npm run check && node --test webgmc.tests.js",
+    "check": "node --check webgmc.js && bash scripts/check-no-playwright.sh",
+    "serve": "python3 -m http.server 9658"
+  },
+  "license": "MIT"
+}
