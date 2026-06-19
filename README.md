@@ -1,64 +1,71 @@
 # WebGMC
 
-Static WebSerial app for connecting to a GQ GMC-800 dosimeter from Chromium-family browsers.
+**A Pip-Boy–styled web dashboard for the [GQ GMC-800](https://gqelectronicsllc.com/collections/geiger-counter/products/gmc-800) Geiger counter.**
 
-## Run locally
+Connect over USB, browse radiation history, watch live CPM, and drive the dosimeter from your browser — no native app required. Built with vanilla JavaScript, [WebSerial](https://developer.chrome.com/docs/capabilities/serial), and [Apache ECharts](https://echarts.apache.org/).
+
+## Screenshots
+
+### History graph & live CPM
+
+Rolling 24-hour history with automatic CPS / CPM / CPH resolution by zoom range, plus a live vertical CPM meter that keeps updating while history loads.
+
+![History graph with live CPM meter](assets/screenshots/history.png)
+
+### Device panel
+
+Firmware version, serial number, device ID, and clock — with one-click sync to your computer's time when skew is detected.
+
+![Device information panel](assets/screenshots/device.png)
+
+### Control panel
+
+Simulate front-panel keys, power off or reboot the dosimeter, clear the local SPIR page cache, or jump to the project on GitHub.
+
+![Control panel with key and power actions](assets/screenshots/control.png)
+
+## Features
+
+- **WebSerial link** — 115200 baud, GQ GMC command protocol, CH340-safe fixed-length transactions
+- **Full ring download** — walks the 2 MB device history backward, progressive chart updates, IndexedDB page cache with overwrite invalidation
+- **Live CPM meter** — `<GETCPM>>` polling once per second via a shared serial queue (meter stays live during graph load)
+- **Demo mode** — explore the full UI with synthetic data; no hardware or WebSerial grant needed
+- **CRT aesthetic** — Monofonto typography, phosphor-green scanlines, Fallout-inspired tabs and status bar
+
+## Quick start
 
 ```sh
-npm test
-npm run check
-npm run serve
+git clone https://github.com/anatoly-scherbakov/webgmc.git
+cd webgmc
+npm test          # syntax check + unit tests
+npm run serve     # http://localhost:9658/
 ```
 
-`npm run check` includes `scripts/check-no-playwright.sh` — it **fails** if anyone adds `@playwright/test`, `e2e/`, `playwright.config.js`, etc.
+Open **http://localhost:9658/** in Chromium or Chrome. WebSerial needs a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts); `localhost` counts.
 
-Open <http://localhost:9658/> in Chromium or Chrome. WebSerial requires a secure context; `localhost` is treated as secure by browsers.
+On the splash screen:
 
-## Device notes
+- **CONNECT** — pick your GMC-800 USB port (vendor `0x1a86`, CH340) and load real history
+- **DEMO** — instant fake device with random CPM and a synthetic 24 h graph (works even without WebSerial)
 
-The app talks to the dosimeter at 115200 baud using the GQ GMC command protocol. It uses fixed-size command transactions because CH340-backed GMC-800 ports can cause Chromium to report `NetworkError: The device has been lost` after a read stream closes.
+## Requirements
 
-The history graph uses Apache ECharts from jsDelivr with built-in `dataZoom` navigation. On connect it loads the full device ring backward from the write marker, updates the chart while pages stream in, and caches SPIR pages in IndexedDB keyed by device and address. Cached pages are invalidated when the write head overwrites them. The default viewport shows the last 24 hours; pan or scroll the chart and use the lower zoom slider to browse history. The graph automatically switches resolution by zoom range: CPS for short windows, CPM for normal day-scale windows, and CPH for multi-day windows.
+| | |
+|---|---|
+| Browser | Chromium or Chrome with WebSerial |
+| Hardware | GQ GMC-800 over USB (CONNECT mode only) |
+| OS | Linux tested; macOS/Windows should work where WebSerial is available |
 
-On connect the app shows a live CPM vertical bar meter to the right of the history chart, driven by `<GETCPM>>` once per second. SPIR graph loading, manual commands, and live polling all share one serial command queue so reads stay serialized without blocking the meter for the whole graph walk.
+## Development
 
-The splash screen uses a local copy of the public GMC-800 product image from GQ Electronics LLC: <https://gq-llc.myshopify.com/cdn/shop/files/GMC-800mainpic_300x300.jpg?v=1698266961>.
+Parsing and graph logic are covered by `node --test webgmc.tests.js`. `npm run check` also runs `scripts/check-no-playwright.sh`, which rejects in-repo Playwright dependencies.
 
-## Live device validation
+For agent workflows, serial protocol notes, and Playwright MCP validation checklists, see **[AGENTS.md](AGENTS.md)**.
 
-Live checks use **Playwright MCP** against a real GMC-800 in Chromium with WebSerial — not an in-repo Playwright dependency or `npm test` suite.
+## Credits
 
-1. Start the dev server: `npm run serve`
-2. Open the app in Chromium (grant the serial port once via Connect):
+Splash product image adapted from [GQ Electronics LLC](https://gq-llc.myshopify.com/cdn/shop/files/GMC-800mainpic_300x300.jpg?v=1698266961). UI references collected in [docs/references.md](docs/references.md).
 
-```sh
-chromium --remote-debugging-port=9223 \
-  --user-data-dir="$HOME/snap/chromium/common/codex-playwright-webgmc" \
-  http://127.0.0.1:9658/
-```
+## License
 
-3. In Cursor, use Playwright MCP to drive that browser. For screenshots use `browser_run_code_unsafe` with `page.screenshot({ animations: 'disabled', timeout: 60000 })` — the stock `browser_take_screenshot` tool often times out on font load. Confirm:
-   - `[data-webgmc-live-meter]` is visible to the right of the chart as soon as the device connects
-   - `[data-webgmc-live-meter-value]` shows live CPM (not `--`) while the graph is still loading
-   - `[data-webgmc-status]` cycles `Loading` → `Loading.` → `Loading..` → `Loading...` during graph load, then shows `{GETVER string} CONNECTED`
-   - `[data-webgmc-status-dot]` blinks on each new live CPM sample after the graph has loaded
-   - `[data-webgmc-disconnect]` sits in the bottom status bar to the right of the status message
-
-## Demo mode validation
-
-Demo mode needs **no GMC-800 and no WebSerial grant**. Use the same Playwright MCP setup as above.
-
-1. Start the dev server: `npm run serve`
-2. Open the app in Chromium (same launch command as live device validation)
-3. In Cursor, use Playwright MCP. Confirm:
-   - `[data-webgmc-connect]` and `[data-webgmc-demo]` are visible on the splash screen
-   - `[data-webgmc-demo]` stays enabled when WebSerial is unavailable
-   - Clicking `[data-webgmc-demo]` reaches `data-webgmc-view="connected"`
-   - `[data-webgmc-live-meter-value]` shows a numeric CPM (not `--`) while `[data-webgmc-status]` still shows `LOADING HISTORY`
-   - `[data-webgmc-status]` cycles `LOADING HISTORY` → `LOADING HISTORY.` → `LOADING HISTORY..` → `LOADING HISTORY...`
-   - `[data-webgmc-chart]` renders (no `data-webgmc-chart-empty="true"`)
-   - After load, `[data-webgmc-status]` contains `DEMO` and `CONNECTED`
-   - `[data-webgmc-status-dot]` blinks and live CPM changes between reads
-   - DEVICE tab fields (`[data-webgmc-device]`, `[data-webgmc-serial]`, `[data-webgmc-dsid]`, `[data-webgmc-datetime]`) are populated
-   - CONTROL tab KEY0 runs without error status
-   - `[data-webgmc-disconnect]` returns to splash and resets the meter to `--`
+MIT
