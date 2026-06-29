@@ -877,6 +877,23 @@
     return starts
   }
 
+  function historyPageReadLength(pageAddress, writeMarker, options) {
+    var memory = (options && options.memoryBytes) || HISTORY_MEMORY_BYTES
+    var page = (options && options.pageBytes) || HISTORY_PAGE_BYTES
+    if (!Number.isInteger(writeMarker)) {
+      return page
+    }
+
+    var pageStart = pageStartForAddress(pageAddress, page, memory)
+    var activePageStart = pageStartForAddress(writeMarker, page, memory)
+    if (pageStart !== activePageStart) {
+      return page
+    }
+
+    var activeOffset = normalizeHistoryAddress(writeMarker, memory) - activePageStart
+    return activeOffset > 0 ? activeOffset : page
+  }
+
   function pageStartsInWriteInterval(previousMarker, currentMarker, options) {
     var memory = (options && options.memoryBytes) || HISTORY_MEMORY_BYTES
     var page = (options && options.pageBytes) || HISTORY_PAGE_BYTES
@@ -1412,7 +1429,8 @@
       await deleteCachedHistoryPage(cache, deviceId, address)
     }
 
-    var page = await state.serialQueue.enqueue(buildSpirTransaction(address, HISTORY_PAGE_BYTES))
+    var readLength = historyPageReadLength(address, writeMarker)
+    var page = await state.serialQueue.enqueue(buildSpirTransaction(address, readLength))
     await putCachedHistoryPage(cache, deviceId, address, page, writeMarker)
     stats.downloadedPages += 1
     stats.downloadedBytes += page.byteLength
@@ -3216,9 +3234,11 @@
     historyRowsToCsv: historyRowsToCsv,
     historyRowsToCpmSeries: historyRowsToCpmSeries,
     historyRowsToGraphSeries: historyRowsToGraphSeries,
+    historyPageReadLength: historyPageReadLength,
     pageStartsBackwardFromMarker: pageStartsBackwardFromMarker,
     pageStartsInWriteInterval: pageStartsInWriteInterval,
     pageWasOverwrittenSince: pageWasOverwrittenSince,
+    readHistoryPageCached: readHistoryPageCached,
     logScaleSeriesData: logScaleSeriesData,
     rollingAverageSeriesData: rollingAverageSeriesData,
     liveCpmBarFillPercent: liveCpmBarFillPercent,
