@@ -26,7 +26,7 @@ Simulate front-panel keys, power off or reboot the dosimeter, clear the local SP
 
 ## Features
 
-- **WebSerial link** — 115200 baud, GQ GMC command protocol, CH340-safe fixed-length transactions
+- **WebSerial link** — 115200 baud, GQ GMC command protocol, CH340/WCH and STM32 Virtual COM Port support
 - **Full ring download** — walks the 2 MB device history backward, progressive chart updates, IndexedDB page cache with overwrite invalidation
 - **Live CPM meter** — `<GETCPM>>` polling once per second via a shared serial queue (meter stays live during graph load)
 - **Demo mode** — explore the full UI with synthetic data; no hardware or WebSerial grant needed
@@ -45,7 +45,7 @@ Open **http://localhost:9658/** in Chromium or Chrome. WebSerial needs a [secure
 
 On the splash screen:
 
-- **CONNECT** — pick your GMC-800 USB port (vendor `0x1a86`, CH340) and load real history
+- **CONNECT** — pick your GMC-800 USB serial port (CH340/WCH or STM32 Virtual COM Port) and load real history
 - **DEMO** — instant fake device with random CPM and a synthetic 24 h graph (works even without WebSerial)
 
 ## Requirements

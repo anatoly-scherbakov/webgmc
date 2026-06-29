@@ -28,6 +28,10 @@
   var DEMO_GRAPH_VIRTUAL_PAGES = 32
   var DEMO_GRAPH_CHUNK_MS = 120
   var DEMO_QUEUE_DELAY_MS = 60
+  var SUPPORTED_SERIAL_PORT_FILTERS = [
+    { usbVendorId: 0x1a86 },
+    { usbVendorId: 0x0483, usbProductId: 0x5740 },
+  ]
   var HISTORY_CSV_COLUMNS = [
     "Index",
     "DateTime",
@@ -313,6 +317,12 @@
     var vendorId = info.usbVendorId ? "0x" + info.usbVendorId.toString(16) : "unknown"
     var productId = info.usbProductId ? "0x" + info.usbProductId.toString(16) : "unknown"
     return "USB vendor " + vendorId + ", product " + productId
+  }
+
+  function supportedSerialPortFilters() {
+    return SUPPORTED_SERIAL_PORT_FILTERS.map(function (filter) {
+      return Object.assign({}, filter)
+    })
   }
 
   function toHex(bytes) {
@@ -3100,7 +3110,7 @@
     }
 
     return navigator.serial.requestPort({
-      filters: [{ usbVendorId: 0x1a86 }],
+      filters: supportedSerialPortFilters(),
     })
   }
 
@@ -3218,9 +3228,11 @@
     encodeUint32BE: encodeUint32BE,
     demoResponseBytes: demoResponseBytes,
     generateDemoHistoryRows: generateDemoHistoryRows,
+    chooseSerialPort: chooseSerialPort,
     parseGmcHistoryRows: parseGmcHistoryRows,
     parseDeviceDatetime: parseDeviceDatetime,
     rotateHistoryToFirstDatetime: rotateHistoryToFirstDatetime,
+    supportedSerialPortFilters: supportedSerialPortFilters,
     toHex: toHex,
   }
 

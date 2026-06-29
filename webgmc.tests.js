@@ -347,6 +347,76 @@ test("formatConnectedStatus appends CONNECTED to the device version string", () 
   assert.equal(webgmc.formatConnectedStatus("GQ GMC-800 V2.41 DEMO"), "GQ GMC-800 V2.41 DEMO CONNECTED")
 })
 
+test("supportedSerialPortFilters includes known GMC-800 USB serial variants", () => {
+  assert.deepEqual(webgmc.supportedSerialPortFilters(), [
+    { usbVendorId: 0x1a86 },
+    { usbVendorId: 0x0483, usbProductId: 0x5740 },
+  ])
+})
+
+test("chooseSerialPort asks Chrome for known GMC-800 USB serial variants", async () => {
+  const originalNavigator = globalThis.navigator
+  let requestedOptions = null
+  const selectedPort = { getInfo: () => ({ usbVendorId: 0x0483, usbProductId: 0x5740 }) }
+
+  Object.defineProperty(globalThis, "navigator", {
+    configurable: true,
+    value: {
+      serial: {
+        getPorts: async () => [],
+        requestPort: async (options) => {
+          requestedOptions = options
+          return selectedPort
+        },
+      },
+    },
+  })
+
+  try {
+    const port = await webgmc.chooseSerialPort()
+    assert.equal(port, selectedPort)
+    assert.deepEqual(requestedOptions, { filters: webgmc.supportedSerialPortFilters() })
+  } finally {
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: originalNavigator,
+    })
+  }
+})
+
+test("chooseSerialPort reuses a remembered serial port before requesting one", async () => {
+  const originalNavigator = globalThis.navigator
+  const originalConsoleInfo = console.info
+  const rememberedPort = { getInfo: () => ({ usbVendorId: 0x1a86, usbProductId: 0x7523 }) }
+  let requestPortCalled = false
+
+  console.info = () => {}
+  Object.defineProperty(globalThis, "navigator", {
+    configurable: true,
+    value: {
+      serial: {
+        getPorts: async () => [rememberedPort],
+        requestPort: async () => {
+          requestPortCalled = true
+          return null
+        },
+      },
+    },
+  })
+
+  try {
+    const port = await webgmc.chooseSerialPort()
+    assert.equal(port, rememberedPort)
+    assert.equal(requestPortCalled, false)
+  } finally {
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: originalNavigator,
+    })
+    console.info = originalConsoleInfo
+  }
+})
+
 test("generateDemoHistoryRows produces chartable CPS series", () => {
   const rows = webgmc.generateDemoHistoryRows({ hours: 1, intervalSeconds: 60 })
   assert.ok(rows.length >= 59)
