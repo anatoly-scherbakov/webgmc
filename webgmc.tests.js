@@ -127,6 +127,72 @@ test("pageWasOverwrittenSince is false when cached and current markers match", (
   assert.equal(webgmc.pageWasOverwrittenSince(385024, 387574, 387574), false)
 })
 
+test("historyPageReadLength uses the active page write offset", () => {
+  assert.equal(
+    webgmc.historyPageReadLength(0x1000, 0x1354, { memoryBytes: 0x10000, pageBytes: 0x1000 }),
+    0x354
+  )
+})
+
+test("historyPageReadLength reads a full page at write page boundaries", () => {
+  assert.equal(
+    webgmc.historyPageReadLength(0x1000, 0x1000, { memoryBytes: 0x10000, pageBytes: 0x1000 }),
+    0x1000
+  )
+})
+
+test("historyPageReadLength reads full older pages", () => {
+  assert.equal(
+    webgmc.historyPageReadLength(0x0000, 0x1354, { memoryBytes: 0x10000, pageBytes: 0x1000 }),
+    0x1000
+  )
+})
+
+test("historyPageReadLength normalizes wrapped page addresses", () => {
+  assert.equal(
+    webgmc.historyPageReadLength(0x10000, 0x0354, { memoryBytes: 0x10000, pageBytes: 0x1000 }),
+    0x354
+  )
+})
+
+test("readHistoryPageCached requests partial active pages and full older pages", async () => {
+  const spirRequests = []
+  const state = {
+    connected: true,
+    historyCache: { memory: new Map(), db: null },
+    serialQueue: {
+      enqueue: async (command, callback) => {
+        if (command.logName.indexOf("<SPIR") === 0) {
+          spirRequests.push(command)
+          return new Uint8Array(command.response.expectedBytes)
+        }
+        if (command.logName === "<GETCPM>>") {
+          const bytes = webgmc.encodeUint32BE(42)
+          if (callback) {
+            callback(null, bytes)
+          }
+          return bytes
+        }
+        throw new Error("Unexpected command " + command.logName)
+      },
+    },
+  }
+  const stats = { cachedPages: 0, downloadedPages: 0, downloadedBytes: 0 }
+
+  await webgmc.readHistoryPageCached(state, "test-device", 0x1000, 0x1354, stats)
+  await webgmc.readHistoryPageCached(state, "test-device", 0x0000, 0x1354, stats)
+
+  assert.deepEqual(
+    spirRequests.map((request) => [request.logName, request.response.expectedBytes]),
+    [
+      ["<SPIR 4096,852>>", 0x354],
+      ["<SPIR 0,4096>>", 0x1000],
+    ]
+  )
+  assert.equal(stats.downloadedPages, 2)
+  assert.equal(stats.downloadedBytes, 0x354 + 0x1000)
+})
+
 test("historyRowsToCpmSeries keeps last 24h when enough rows exist", () => {
   const latest = new Date(2026, 5, 18, 12, 0, 0).getTime()
   const rows = [
